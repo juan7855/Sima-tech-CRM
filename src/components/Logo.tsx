@@ -78,16 +78,90 @@ export function Logo({ collapsed }: { collapsed?: boolean }) {
   );
 }
 
-/** Logo grande para portadas: flota suavemente y el anillo orbita detrás del disco. */
-export function LogoHero({ size = 320, className = "" }: { size?: number; className?: string }) {
+/**
+ * Escenario del logo para portadas. Todas las capas comparten el mismo centro:
+ * halo de luz, anillo con cometa orbital, anillo punteado contra-rotante y el
+ * logo flotando en el medio, así nada queda desalineado.
+ */
+export function LogoHero({ size = 280, className = "" }: { size?: number; className?: string }) {
+  const stage = size * 1.5;
+  const sweepMask =
+    "radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px))";
   return (
-    <motion.div
-      className={className}
-      animate={{ y: [0, -10, 0] }}
-      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <LogoMark size={size} />
-    </motion.div>
+    <div className={className} style={{ width: stage, height: stage }} aria-hidden>
+      <div className="relative h-full w-full">
+      {/* Halo de luz */}
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          width: stage * 1.9,
+          height: stage * 1.9,
+          background:
+            "radial-gradient(closest-side, rgba(255,122,24,0.30), rgba(255,122,24,0.10) 45%, transparent 72%)",
+        }}
+        animate={{ opacity: [0.65, 1, 0.65], scale: [0.97, 1.03, 0.97] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Anillo de referencia fijo */}
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-ember-400/20"
+        style={{ width: size * 1.22, height: size * 1.22 }}
+      />
+
+      {/* Cometa orbital */}
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          width: size * 1.22,
+          height: size * 1.22,
+          background:
+            "conic-gradient(from 0deg, transparent 0deg, transparent 230deg, rgba(255,162,58,0.0) 235deg, rgba(255,162,58,0.95) 359deg, transparent 360deg)",
+          maskImage: sweepMask,
+          WebkitMaskImage: sweepMask,
+        }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Anillo punteado exterior, gira al revés */}
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-white/[0.09]"
+        style={{ width: size * 1.46, height: size * 1.46 }}
+        animate={{ rotate: -360 }}
+        transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Satélite sobre el anillo exterior */}
+      <motion.div
+        className="absolute left-1/2 top-1/2"
+        style={{ width: 0, height: 0 }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+      >
+        <span
+          className="absolute rounded-full bg-ember-300"
+          style={{
+            width: 7,
+            height: 7,
+            left: -3.5,
+            top: -(size * 1.46) / 2 - 3.5,
+            boxShadow: "0 0 14px 3px rgba(255,162,58,0.7)",
+          }}
+        />
+      </motion.div>
+
+      {/* Logo */}
+      <motion.div
+        className="absolute left-1/2 top-1/2"
+        style={{ marginLeft: -size / 2, marginTop: -size / 2 }}
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <LogoMark size={size} glow={false} />
+      </motion.div>
+      </div>
+    </div>
   );
 }
 

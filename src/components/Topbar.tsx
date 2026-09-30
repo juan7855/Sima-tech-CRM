@@ -4,6 +4,7 @@ import { Bell, Menu, Search } from "lucide-react";
 import { NAV, USER } from "../nav";
 import { useStore, type ViewId } from "../store";
 import { cn } from "../utils/cn";
+import { LogoMark } from "./Logo";
 
 const KIND_TONE: Record<string, string> = {
   lanzamiento: "bg-ember-500",
@@ -70,6 +71,8 @@ export function Topbar({
         >
           <Menu size={19} />
         </button>
+
+        <LogoMark size={38} glow={false} className="lg:hidden" />
 
         <div className="min-w-0 flex-1">
           <motion.h1

@@ -7,7 +7,6 @@ import {
   ListChecks,
   Sparkles,
 } from "lucide-react";
-const heroImg = "/images/hero-glow.jpg";
 import { LogoHero } from "../components/Logo";
 import { STRATEGY, greetingForHour, useStore, type ViewId } from "../store";
 import {
@@ -126,22 +125,11 @@ export function Home({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
       {/* ---------------- Saludo ---------------- */}
       <SpotlightCard className="rounded-[34px] p-0">
         <div className="relative overflow-hidden rounded-[34px] px-7 py-10 sm:px-12 sm:py-14">
-          <img
-            src={heroImg}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute right-[-8%] top-0 h-full w-[68%] object-cover opacity-[0.55] mix-blend-screen"
-            style={{
-              maskImage: "radial-gradient(70% 80% at 70% 45%, #000 0%, transparent 78%)",
-              WebkitMaskImage:
-                "radial-gradient(70% 80% at 70% 45%, #000 0%, transparent 78%)",
-            }}
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/45 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/30 to-transparent" />
 
           <LogoHero
-            size={300}
-            className="pointer-events-none absolute right-10 top-1/2 hidden -translate-y-1/2 lg:block xl:right-16"
+            size={250}
+            className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 lg:block xl:right-10"
           />
 
           <div className="relative max-w-xl">
