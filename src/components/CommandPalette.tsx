@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CornerDownLeft, Search } from "lucide-react";
+import { LogoMark } from "./Logo";
 import { NAV, USER } from "../nav";
 import { useStore, type ViewId } from "../store";
 import { cn } from "../utils/cn";
@@ -188,6 +189,7 @@ export function CommandPalette({
             <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3 text-[11px] text-white/30">
               <span>{filtered.length} resultados</span>
               <span className="flex items-center gap-1.5">
+                <LogoMark size={22} glow={false} />
                 Sesión de {USER.first} · Sima Tech
               </span>
             </div>

@@ -63,7 +63,7 @@ export function Identity() {
             «{IDENTITY.claim}»
           </p>
           <div className="relative mt-7 flex items-center justify-center gap-3">
-            <LogoMark size={26} />
+            <LogoMark size={56} />
             <span className="text-[12px] uppercase tracking-[0.24em] text-white/35">
               Sima Tech
             </span>

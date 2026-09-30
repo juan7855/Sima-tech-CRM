@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from "lucide-react";
 const heroImg = "/images/hero-glow.jpg";
+import { LogoHero } from "../components/Logo";
 import { STRATEGY, greetingForHour, useStore, type ViewId } from "../store";
 import {
   Counter,
@@ -137,6 +138,11 @@ export function Home({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
             }}
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/45 to-transparent" />
+
+          <LogoHero
+            size={300}
+            className="pointer-events-none absolute right-10 top-1/2 hidden -translate-y-1/2 lg:block xl:right-16"
+          />
 
           <div className="relative max-w-xl">
             <motion.p

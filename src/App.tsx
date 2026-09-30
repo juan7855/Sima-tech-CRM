@@ -6,6 +6,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
 import { CommandPalette } from "./components/CommandPalette";
 import { AmbientBackground } from "./components/ui";
+import { LogoMark, Splash } from "./components/Logo";
 import { Home } from "./sections/Home";
 import { Identity } from "./sections/Identity";
 import { Strategy } from "./sections/Strategy";
@@ -25,6 +26,12 @@ function Shell() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [splash, setSplash] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSplash(false), 1600);
+    return () => clearTimeout(t);
+  }, []);
 
   const navigate = useCallback((next: ViewId) => {
     setView(next);
@@ -81,7 +88,8 @@ function Shell() {
 
           <footer className="mx-auto mt-6 max-w-[1180px] px-4 pb-10 sm:px-6 lg:px-9">
             <div className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.05] pt-6 sm:flex-row">
-              <p className="text-[11.5px] text-white/25">
+              <p className="flex items-center gap-2.5 text-[11.5px] text-white/25">
+                <LogoMark size={26} glow={false} />
                 Sima Tech · Command Center · v3.2 — equipo de marketing
               </p>
               <p className="text-[11.5px] text-white/25">
@@ -91,6 +99,8 @@ function Shell() {
           </footer>
         </main>
       </div>
+
+      <Splash visible={splash} />
 
       <CommandPalette
         open={paletteOpen}
