@@ -1,0 +1,15 @@
+import { JSDOM } from "jsdom";
+import fs from "node:fs";
+const dom = new JSDOM(`<!doctype html><html><body><div id="root"></div></body></html>`, { url: "http://localhost/", pretendToBeVisual: true, runScripts: "outside-only" });
+const { window } = dom;
+for (const k of ["window","document","navigator","HTMLElement","HTMLInputElement","HTMLSelectElement","Element","Node","MutationObserver","DOMParser","SVGElement"]) globalThis[k] = window[k];
+globalThis.getComputedStyle = window.getComputedStyle.bind(window);
+globalThis.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16);
+globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
+window.matchMedia = (q) => ({ matches:false, media:q, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){}, dispatchEvent:()=>false });
+globalThis.matchMedia = window.matchMedia;
+console.error = (...a) => console.log("REACT-ERR", a.map(String).join(" ").slice(0,400));
+window.eval(fs.readFileSync("/tmp/smoke2.js","utf8"));
+await new Promise(r => setTimeout(r, 800));
+console.log("root html length:", document.getElementById("root").innerHTML.length);
+console.log("buttons:", [...document.querySelectorAll("button")].map(b => JSON.stringify(b.textContent.slice(0,30))).join(" | "));
