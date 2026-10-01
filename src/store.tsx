@@ -2,10 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { supabase } from "./lib/supabase";
 
 /* ------------------------------------------------------------------ */
 /*  Tipos                                                              */
@@ -390,49 +392,123 @@ const StoreContext = createContext<StoreValue | null>(null);
 let counter = 100;
 const uid = (prefix: string) => `${prefix}${++counter}`;
 
-export function StoreProvider({ children }: { children: ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
-  const [cards, setCards] = useState<KanbanCard[]>(INITIAL_CARDS);
-  const [events, setEvents] = useState<CalendarEvent[]>(INITIAL_EVENTS);
+const sortEvents = (list: CalendarEvent[]) =>
+  [...list].sort((a, b) => a.year - b.year || a.month - b.month || a.day - b.day);
 
-  const toggleTask = useCallback((id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-    );
+export function StoreProvider({ children }: { children: ReactNode }) {
+  const [tasks, setTasks] = useState<Task[]>(supabase ? [] : INITIAL_TASKS);
+  const [cards, setCards] = useState<KanbanCard[]>(supabase ? [] : INITIAL_CARDS);
+  const [events, setEvents] = useState<CalendarEvent[]>(supabase ? [] : INITIAL_EVENTS);
+
+  // Carga inicial desde Supabase; si falla, la app sigue con los datos locales.
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+    (async () => {
+      const [t, k, e] = await Promise.all([
+        supabase.from("tasks").select("*").order("created_at", { ascending: false }),
+        supabase.from("kanban_cards").select("*").order("created_at"),
+        supabase.from("calendar_events").select("*"),
+      ]);
+      if (cancelled) return;
+      if (t.error || k.error || e.error) {
+        console.error("Supabase:", t.error ?? k.error ?? e.error);
+        setTasks(INITIAL_TASKS);
+        setCards(INITIAL_CARDS);
+        setEvents(INITIAL_EVENTS);
+        return;
+      }
+      setTasks(t.data as Task[]);
+      setCards(k.data as KanbanCard[]);
+      setEvents(sortEvents(e.data as CalendarEvent[]));
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  // Las escrituras son optimistas: la UI cambia al instante y se sincroniza en segundo plano.
+  const report = (op: string, error: { message: string } | null | undefined) => {
+    if (error) console.error(`Supabase (${op}):`, error.message);
+  };
+
+  const toggleTask = useCallback(
+    (id: string) => {
+      const current = tasks.find((t) => t.id === id);
+      if (!current) return;
+      const done = !current.done;
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done } : t)));
+      if (supabase) void supabase.from("tasks").update({ done }).eq("id", id).then((r) => report("toggleTask", r.error));
+    },
+    [tasks],
+  );
 
   const removeTask = useCallback((id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
+    if (supabase) void supabase.from("tasks").delete().eq("id", id).then((r) => report("removeTask", r.error));
   }, []);
 
   const addTask = useCallback((task: Omit<Task, "id" | "done">) => {
-    setTasks((prev) => [{ ...task, id: uid("t"), done: false }, ...prev]);
+    const local: Task = { ...task, id: uid("t"), done: false };
+    setTasks((prev) => [local, ...prev]);
+    if (!supabase) return;
+    void supabase
+      .from("tasks")
+      .insert(task)
+      .select()
+      .single()
+      .then((r) => {
+        report("addTask", r.error);
+        if (r.data) setTasks((prev) => prev.map((t) => (t.id === local.id ? (r.data as Task) : t)));
+      });
   }, []);
 
-  const moveCard = useCallback((id: string, column: string) => {
-    setCards((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              column,
-              progress: column === "hecho" ? 100 : c.progress,
-            }
-          : c,
-      ),
-    );
-  }, []);
+  const moveCard = useCallback(
+    (id: string, column: string) => {
+      const current = cards.find((c) => c.id === id);
+      if (!current) return;
+      const progress = column === "hecho" ? 100 : current.progress;
+      setCards((prev) => prev.map((c) => (c.id === id ? { ...c, column, progress } : c)));
+      if (supabase) {
+        void supabase.from("kanban_cards").update({ column, progress }).eq("id", id).then((r) => report("moveCard", r.error));
+      }
+    },
+    [cards],
+  );
 
   const addCard = useCallback((card: Omit<KanbanCard, "id">) => {
-    setCards((prev) => [...prev, { ...card, id: uid("k") }]);
+    const local: KanbanCard = { ...card, id: uid("k") };
+    setCards((prev) => [...prev, local]);
+    if (!supabase) return;
+    void supabase
+      .from("kanban_cards")
+      .insert(card)
+      .select()
+      .single()
+      .then((r) => {
+        report("addCard", r.error);
+        if (r.data) setCards((prev) => prev.map((c) => (c.id === local.id ? (r.data as KanbanCard) : c)));
+      });
   }, []);
 
   const addEvent = useCallback((event: Omit<CalendarEvent, "id">) => {
-    setEvents((prev) => [...prev, { ...event, id: uid("e") }]);
+    const local: CalendarEvent = { ...event, id: uid("e") };
+    setEvents((prev) => [...prev, local]);
+    if (!supabase) return;
+    void supabase
+      .from("calendar_events")
+      .insert(event)
+      .select()
+      .single()
+      .then((r) => {
+        report("addEvent", r.error);
+        if (r.data) setEvents((prev) => prev.map((e) => (e.id === local.id ? (r.data as CalendarEvent) : e)));
+      });
   }, []);
 
   const removeEvent = useCallback((id: string) => {
     setEvents((prev) => prev.filter((e) => e.id !== id));
+    if (supabase) void supabase.from("calendar_events").delete().eq("id", id).then((r) => report("removeEvent", r.error));
   }, []);
 
   const value = useMemo<StoreValue>(
