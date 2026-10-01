@@ -129,7 +129,7 @@ export function Topbar({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 340, damping: 28 }}
-                className="glass-strong absolute right-0 top-[calc(100%+10px)] w-[320px] overflow-hidden rounded-3xl"
+                className="glass-strong !bg-[#0d0d11] absolute right-0 top-[calc(100%+10px)] z-50 w-[320px] overflow-hidden rounded-3xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.8)]"
               >
                 <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
                   <p className="text-[13px] font-semibold text-white">Notificaciones</p>
